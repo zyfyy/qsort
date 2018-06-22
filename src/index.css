@@ -1,0 +1,131 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+header {
+    text-align: center;
+    border-bottom: 1px solid #ccc;
+    box-shadow: 0 1px 10px 0px #ccc;
+    height: 60px;
+    line-height: 60px;
+}
+
+header h2 {
+    margin: 0;
+}
+
+.tabs {
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid #ccc;
+    margin-top:10px;
+}
+.tabs li {
+    border: 1px solid #ccc;
+    border-radius: 15px 15px 0 0;
+    display: inline-block;
+    list-style: none;
+    padding: 3px 10px;
+    cursor: pointer;
+    margin-left: 5px;
+    border-bottom: 0;
+}
+.tabs li.active {
+    background: #ccc;
+}
+
+.tabs .addTab {
+    margin: 0 5px;
+    font-size: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #999;
+}
+.tabs .addTabName {
+    width: 150px;
+    margin: 0 5px;
+
+}
+
+.container {
+    display: flex;
+}
+.answer, .sort, .textarea {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-top: 0;
+    min-height: 200px;
+    padding-top: 5px;
+}
+
+.textarea textarea {
+    min-height: 180px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid #ccc;
+}
+.textarea .addAnwser {
+    float: right;
+}
+
+.answer:last-child {
+    border-right: 0;
+}
+
+.answer p {
+    margin: 5px 0;
+    text-indent: 1em;
+}
+.answer p span {
+    cursor: pointer;
+    background: #eee;
+    padding: 0px 10px;
+    border-radius: 5px;
+}
+
+.sort {
+    border-left: 0;
+    border-right: 0;
+    position: relative;
+}
+
+.sort p {
+    text-align: center;
+    cursor: pointer;
+    margin: 0;
+}
+.sort p.active {
+    background: #ccc;
+}
+.sort p.active span:first-child {
+    color: #272def;
+}
+
+.sort p span:first-child {
+    color: green;
+}
+.sort .sortpannel {
+    background: #eee;
+    display: none;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    position: absolute;
+    z-index: 999;
+}
+
+
+
+
+
+
+
+
+
+
+
+
