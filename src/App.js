@@ -4,46 +4,177 @@ import Question from './Question';
 import Answer from './Answer';
 import Sorts from './Sorts';
 
+const ContainType = Symbol('ContainType');
+const lsName = 'lsData';
+
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      project: '京东用户体验调研语词分析工具',
-      questions: [
-        {
-          question: 'what is this?',
-          isActive: true,
-          answers: ['abc', 'bbc', 'def'],
-          sorted: [{
-            isActive: true,
-            name: 'aType',
-            answers: ['adde']
-          },{
-            isActive: false,
-            name: 'bType',
-            answers: ['addefff']
-          }]
-        },
-        {
-          question: 'what is that?',
-          isActive: false,
-          answers: ['abbbc', 'bddbc', 'ccdef'],
-          sorted: []
-        }
-      ]
+    let ls = localStorage.getItem(lsName);
+    let state;
+    try {
+      state = JSON.parse(ls)
+    } catch(e) {
+
     }
+    this.state =  state ? state : {
+      project: '京东用户体验调研语词分析工具',
+      questions: [{
+        question: 'ab',
+        isActive: true,
+        answers: ['20', '404', '50', 'ab', 'dddf', '202'],
+        sorted: [{
+          answers: [],
+          conditions: [],
+          isActive: true,
+          name: 'atype',
+          showPannel: false
+        }]
+      }]
+    };
+
+
     this.handlerTabClick = this.handlerTabClick.bind(this);
     this.handlerSortClick = this.handlerSortClick.bind(this);
     this.handlerTabAddClick = this.handlerTabAddClick.bind(this);
     this.handlerAnswerClick = this.handlerAnswerClick.bind(this);
     this.handlerAddAnswerClick = this.handlerAddAnswerClick.bind(this);
+    this.handlerAddsortClick = this.handlerAddsortClick.bind(this);
+    this.handlerPannelClose = this.handlerPannelClose.bind(this);
+    this.handlerAddConditionClick = this.handlerAddConditionClick.bind(this);
+    this.handlerConditionDelClick = this.handlerConditionDelClick.bind(this);
+    this.handlerSortDbClick = this.handlerSortDbClick.bind(this);
+
+    var me = this;
+    window.addEventListener("beforeunload", function (e) {
+      localStorage.setItem(lsName, JSON.stringify(me.state));
+    });
   }
+
+
+  handlerSortDbClick(idx, evt) {
+    evt.preventDefault();
+    console.log(idx);
+    let state = this.state;
+    let selected = state.questions.find(q => {
+      return q.isActive;
+    });
+    let currentSort = selected.sorted.find(q => {
+      return q.isActive;
+    })
+    currentSort.showPannel = true;
+    this.setState(state);
+  }
+  
+  handlerConditionDelClick(idx) {
+    let state = this.state;
+    let selected = state.questions.find(q => {
+      return q.isActive;
+    });
+    let currentSort = selected.sorted.find(q => {
+      return q.isActive;
+    })
+    currentSort.conditions.splice(idx, 1);
+
+    this.sortQuestions(selected, currentSort, currentSort.conditions);
+    this.sortQuestions(currentSort, selected, currentSort.conditions, true);
+    this.setState(state);
+  }
+
+  handlerAddConditionClick(val) {
+    if (!val) {
+        return;
+    }
+    let state = this.state;
+    let selected = state.questions.find(q => {
+      return q.isActive;
+    });
+    let currentSort = selected.sorted.find(q => {
+      return q.isActive;
+    })
+    const con = {
+      name: val,
+      filter: ContainType
+    };
+    currentSort.conditions.push(con);
+
+    this.sortQuestions(selected, currentSort, currentSort.conditions);
+    this.sortQuestions(currentSort, selected, currentSort.conditions, true);
+    this.setState(state);
+  }
+
+  sortQuestions(selected, currentSort, cons, isreverse) {
+    let tmp = [];
+    selected.answers.forEach(item => {
+      let match = true && cons.length;
+      for (let i = 0, l = cons.length; i < l; i++) {
+        if (!(item.indexOf(cons[i].name) > -1)) {
+          match = false;
+          break;
+        }
+      }
+      if (isreverse) {
+        if (!match) {
+          currentSort.answers.push(item);
+        } else {
+          tmp.push(item);
+        }
+      } else {
+        if (match) {
+          currentSort.answers.push(item);
+        } else {
+          tmp.push(item);
+        }
+      }
+    })
+    selected.answers = tmp;
+  }
+
+  handlerPannelClose() {
+    let state = this.state;
+    let selected = state.questions.find(q => {
+      return q.isActive;
+    });
+    let currentSort = selected.sorted.find(q => {
+      return q.isActive;
+    })
+    currentSort.showPannel = false;
+    this.setState(state);
+  }
+  
+  handlerAddsortClick(val) {
+    let state = this.state;
+    let selected = state.questions.find(q => {
+      return q.isActive;
+    });
+    if (!selected) {
+      return;
+    }
+    selected.sorted.map(q => {
+      q.isActive = false;
+      q.showPannel = false;
+      return '';
+    });
+
+    selected.sorted.push({
+      isActive: true,
+      name: val,
+      answers: [],
+      showPannel: true,
+      conditions: []
+    });
+    this.setState(state);
+  }
+
   handlerAddAnswerClick() {
     let text = document.querySelector('.textarea textarea');
     let data = this.state;
     let selected = data.questions.find(q => {
       return q.isActive;
     });
+    if (!selected) {
+      return;
+    }
     selected.answers = text.value.split('\n').filter(item => {
       return item;
     });
@@ -54,7 +185,7 @@ class App extends Component {
     let selected = data.questions.find(q => {
       return q.isActive;
     });
-    let currentSort = selected.sorted.find((q, idx)=> {
+    let currentSort = selected.sorted.find(q => {
       return q.isActive;
     });
     if (!currentSort) {
@@ -90,13 +221,25 @@ class App extends Component {
     });
     this.setState(data);
   }
+
   handlerTabClick(i) {
-    let data = this.state;
-    data.questions.map((q, idx) => {
+    let state = this.state;
+    state.questions.map((q, idx) => {
       q.isActive = idx === i ? true : false;
       return '';
     });
-    this.setState(data);
+    let selected = state.questions.find(q => {
+      return q.isActive;
+    });
+    let currentSort = selected.sorted.find(q => {
+      return q.isActive;
+    });
+    if (!currentSort) {
+      if (selected.sorted.length) {
+        selected.sorted[0].isActive = true;
+      }
+    }
+    this.setState(state);
   }
 
   handlerSortClick(i) {
@@ -116,10 +259,14 @@ class App extends Component {
     const selected = data.questions.find(q => {
       return q.isActive;
     });
-    const currentSort = selected.sorted.find(q => {
-      return q.isActive;
-    }) || selected.sorted[0] || {};
+    let currentSort;
 
+    if (selected) {
+      currentSort = selected.sorted.find(q => {
+        return q.isActive;
+      }) || selected.sorted[0] || {};
+    }
+  
     return (
       <div className="App">
         <header>
@@ -138,12 +285,18 @@ class App extends Component {
           <span onClick={this.handlerTabAddClick} className="addTab">+</span>
         </ul>
         <div className="container">
-          <Answer items={selected.answers}
+          <Answer items={selected ? selected.answers : []}
                   handlerClick={this.handlerAnswerClick}
                   handlerAdd={this.handlerAddAnswerClick}
                   type="A"/>
-          <Sorts items={selected.sorted} handlerClick={this.handlerSortClick}/>
-          <Answer items={currentSort.answers || []} handlerClick={this.handlerAnswerClick} type="S"/>
+          <Sorts items={selected ? selected.sorted : []}
+            handlerClick={this.handlerSortClick}
+            handlerSortDbClick={this.handlerSortDbClick}
+            handlerPannelClose={this.handlerPannelClose}
+            handlerAddConditionClick={this.handlerAddConditionClick}
+            handlerConditionDelClick={this.handlerConditionDelClick}
+            handlerAddsortClick={this.handlerAddsortClick}/>
+          <Answer items={currentSort ? currentSort.answers : []} handlerClick={this.handlerAnswerClick} type="S"/>
         </div>
       </div>
     );

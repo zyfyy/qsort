@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 class Answer extends Component {
     render() {
         const type = this.props.type;
-        const items = this.props.items;
+        const items = this.props.items || [];
         if (type === 'A' && !items.length) {
             return (
                 <div className="textarea">
